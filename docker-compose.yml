@@ -4,7 +4,6 @@ services:
     build: .
     ports:
       - "2222:22"
-      - "8080:8080"
-    privileged: true
     restart: always
-    command: /usr/sbin/sshd -D
+    mem_limit: 256m
+    command: /usr/sbin/sshd -D -e

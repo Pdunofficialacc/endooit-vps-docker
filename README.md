@@ -1,50 +1,51 @@
-# endooit-vps-docker
+# endooit-vps-docker (RAM Fixed + Crash Proof)
 
-Full root VPS-style Docker container.
+**Fixed version** - Alpine based, ultra low RAM for free tier bypass.
 
 **Credentials:**
 - User: `root`
 - Password: `dev`
-- Full root access enabled.
+- Full root access
 
-## Railway Deploy (fast)
+## Why previous crashed?
+Ubuntu + packages = high RAM → free Railway / low memory kills it.
 
-1. Go to https://railway.app
-2. New Project → Deploy from GitHub repo
-3. Select this repo: `Pdunofficialacc/endooit-vps-docker`
-4. Add service, set start command if needed: `/usr/sbin/sshd -D`
-5. For TCP public access: use Railway TCP proxy or attach ngrok.
+## New version
+- Alpine 3.20 (tiny)
+- Minimal packages only
+- SSH ready
+- Ngrok binary included
 
-## Ngrok TCP tunnel (for public TCP address)
+## Railway Deploy (recommended)
+1. railway.app → New Project → Deploy from GitHub
+2. Select `Pdunofficialacc/endooit-vps-docker`
+3. After deploy, go to Settings → Networking → Generate Domain or TCP Proxy if available
+4. For public TCP: use ngrok inside
 
-Inside container or locally:
-
+## Get TCP address (ngrok)
+Inside running container:
 ```bash
 ngrok tcp 22
 ```
+Output example: `tcp://0.tcp.ngrok.io:12345`
 
-This gives you a public TCP address like `0.tcp.ngrok.io:xxxxx`
-
-Connect with:
-
+Connect:
 ```bash
-ssh root@0.tcp.ngrok.io -p xxxxx
+ssh root@0.tcp.ngrok.io -p 12345
 # password: dev
 ```
 
-## Docker local test
-
+## Local test
 ```bash
 docker build -t endooit-vps .
-docker run -d -p 2222:22 --name vps endooit-vps
+docker run -d -p 2222:22 --name vps --memory=256m endooit-vps
 ssh root@localhost -p 2222
-# pass: dev
 ```
 
-## Notes
+## RAM bypass tips
+- Use Alpine (already done)
+- Railway free: create multiple projects / new accounts if limit hit
+- Add swap if privileged: `fallocate -l 1G /swap && mkswap /swap && swapon /swap`
+- Keep only SSH running, no extra services
 
-- Railway free tier has limits. Use multiple projects / accounts for bypass feel.
-- Keep ngrok authtoken set for permanent tunnels: `ngrok config add-authtoken YOUR_TOKEN`
-- Full root, docker-in-docker possible if privileged.
-
-Anonymous style. Ready.
+Crash fix + low RAM ready.
