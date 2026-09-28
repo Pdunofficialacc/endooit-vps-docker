@@ -1,26 +1,31 @@
-FROM alpine:3.20
+FROM ubuntu:22.04
 
-# Ultra light base for RAM bypass on free tiers (Railway/others)
-RUN apk add --no-cache \
-    openssh \
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Full Ubuntu + high resource style
+RUN apt-get update && apt-get install -y \
+    openssh-server \
     sudo \
     curl \
-    bash \
+    wget \
     nano \
+    htop \
     net-tools \
-    dropbear \
-    && mkdir -p /var/run/sshd /root/.ssh \
+    iputils-ping \
+    docker.io \
+    vim \
+    git \
+    && mkdir -p /var/run/sshd \
     && echo 'root:dev' | chpasswd \
-    && ssh-keygen -A \
+    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config \
     && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config \
     && echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config \
-    && echo "PermitEmptyPasswords no" >> /etc/ssh/sshd_config \
-    && echo "UsePAM no" >> /etc/ssh/sshd_config
+    && ssh-keygen -A
 
-# Optional ngrok (lightweight)
+# Ngrok
 RUN curl -sL https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz | tar xz -C /usr/local/bin || true
 
 EXPOSE 22 80 443 8080
 
-# Keep process alive + low memory
 CMD ["/usr/sbin/sshd", "-D", "-e"]
